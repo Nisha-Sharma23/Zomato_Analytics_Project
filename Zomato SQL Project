@@ -1,0 +1,88 @@
+CREATE database Zomato_Analysis;
+
+select * from `country-code`;
+
+
+select * from currency;
+
+
+select * from `zomato data`;
+
+## KPI'
+# Total Restaurants
+select count("Restaurant Name") Total_Restaurant from `zomato data`;
+
+## Average Rating
+select avg(rating)AvgRating from `zomato data`;
+
+## Total Country
+select count(country)TotalCountry from `country-code`;
+
+## Total City
+select count(distinct(city))TotalCity from `zomato data`;
+
+
+## Total Cuisines
+select count(distinct(Cuisines))TotalCuisines from `zomato data`;
+
+# find the number of restaurant based on city and country
+select city,count("RestaurantID")Total_Restaurant from`zomato data`
+group by 1;
+
+#  the number of restaurant based on country
+
+select country,count("RestaurantID")Total_Restaurant from`zomato data` ZM
+left join `country-code` CC on ZM.CountryCode=CC.CountryCode
+group by 1;
+## Country and city wise Restaurants
+select CC.country,ZM.city,count("RestaurantID")Total_Restaurant from`zomato data` ZM
+left join `country-code` CC on ZM.CountryCode=CC.CountryCode
+group by 1,2;
+
+# Numbers of Resturants opening based on Year 
+
+select distinct year(Datekey_Opening)As Year,
+count(*)TotalRestaurants from
+`zomato data` group by 1;
+
+# Numbers of Resturants opening based on Month
+
+select distinct monthname(Datekey_Opening)Month ,count(*)TotalRestaurants
+from`zomato data` group by 1;
+
+# Numbers of Resturants opening based on Quarter 
+
+select quarter(datekey_opening)Quater,
+count(*)TotalRestaurants
+ from`zomato data` group by 1;
+
+# Percentage of Resturants based on "Has_Table_booking"
+select Has_Table_booking, count(*) as TotalRestaurants,
+round((count(*)/(select count(*) from `zomato data`))*100,2) as Percentage from `zomato data`
+group by 1;
+
+# Percentage of Resturants based on "Has_Online_delivery"
+select Has_Online_delivery, count(*) as TotalRestaurants,
+round((count(*)/(select count(*) from `zomato data`))*100,2) as Percentage from `zomato data`
+group by 1;
+
+#Count of Resturants based on Ratings
+select Rating , count(*)RestaurantsCount
+from `zomato data` where Rating is not null
+group by 1 order by 1 asc;
+
+# Total Cuisines
+select  Cuisines,count(cuisines) from `zomato data`
+group by 1;
+
+
+# Create buckets based on Average Price of reasonable size and find out how many resturants falls in each buckets
+select CostRange,count(*)TotalRestaurants
+from ( select case
+when Average_Cost_for_two between 0 and 300 then "0-300"
+when Average_Cost_for_two between 301 and 600 then "301-600"
+when Average_Cost_for_two between 601 and 1000 then "601-1000"
+when Average_Cost_for_two between 1001 and 430000 then "1001-430000"
+else 'other'
+end as CostRange from `zomato data`) as subquery
+group by 1;
